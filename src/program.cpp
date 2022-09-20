@@ -998,11 +998,11 @@ cl_build_status cvk_program::compile_source(const cvk_device* device) {
         cvk_warn("Overriding SPIR-V binary with file at %s",
                  override_spirv_bin);
         if (!m_binary.load(override_spirv_bin)) {
-            cvk_error("Could not load SPIR-V binary from \"%s\"", filename);
+            cvk_error("Could not load SPIR-V binary from \"%s\"", override_spirv_bin);
             return CL_BUILD_ERROR;
         } else {
             cvk_info("Loaded SPIR-V binary from \"%s\", size = %zu words",
-                     filename, m_binary.code().size());
+                     override_spirv_bin, m_binary.code().size());
         }
     }
 
