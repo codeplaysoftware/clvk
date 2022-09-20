@@ -233,6 +233,9 @@ variables. Here's a quick guide:
   between applications runs. The user is responsible for ensuring that this
   directory is not used concurrently by more than one application.
 
+* `CLVK_OVERRIDE_SPIRV_WITH` points to a SPIR-V binary that will be used in place of
+  any binary produced by CLSPV.
+
 # Limitations
 
 * Only one device per CL context

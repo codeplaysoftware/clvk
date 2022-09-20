@@ -994,6 +994,18 @@ cl_build_status cvk_program::compile_source(const cvk_device* device) {
 #endif
 #endif // !COMPILER_AVAILABLE
 
+    if (const char* override_spirv_bin = std::getenv("CLVK_OVERRIDE_SPIRV_WITH")) {
+        cvk_warn("Overriding SPIR-V binary with file at %s",
+                 override_spirv_bin);
+        if (!m_binary.load(override_spirv_bin)) {
+            cvk_error("Could not load SPIR-V binary from \"%s\"", filename);
+            return CL_BUILD_ERROR;
+        } else {
+            cvk_info("Loaded SPIR-V binary from \"%s\", size = %zu words",
+                     filename, m_binary.code().size());
+        }
+    }
+
     // Load descriptor map
     if (!m_binary.load_descriptor_map()) {
         cvk_error("Could not load descriptor map for SPIR-V binary.");
@@ -1216,16 +1228,13 @@ void cvk_program::do_build() {
     // reflection information for clGetProgramInfo.
     const uint32_t* spir_data = m_binary.spir_data();
     size_t spir_size = m_binary.spir_size();
-    if (!device->is_vulkan_extension_enabled(
-            VK_KHR_SHADER_NON_SEMANTIC_INFO_EXTENSION_NAME)) {
-        if (!m_binary.strip_reflection(&m_stripped_binary)) {
-            cvk_error_fn("couldn't strip reflection from SPIR-V module");
-            complete_operation(device, CL_BUILD_ERROR);
-            return;
-        }
-        spir_data = m_stripped_binary.data();
-        spir_size = m_stripped_binary.size() * sizeof(uint32_t);
+    if (!m_binary.strip_reflection(&m_stripped_binary)) {
+        cvk_error_fn("couldn't strip reflection from SPIR-V module");
+        complete_operation(device, CL_BUILD_ERROR);
+        return;
     }
+    spir_data = m_stripped_binary.data();
+    spir_size = m_stripped_binary.size() * sizeof(uint32_t);
 
     // Create a shader module
     VkDevice dev = device->vulkan_device();
