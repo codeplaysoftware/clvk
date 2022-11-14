@@ -476,6 +476,25 @@ void cvk_command_kernel::update_global_push_constants(
                            &num_workgroups);
     }
 
+    if (auto pc =
+            program->push_constant(pushconstant::module_constants_pointer)) {
+        CVK_ASSERT(pc->size == 8);
+
+        auto buffer = program->module_constant_data_buffer();
+        VkBufferDeviceAddressInfo info{};
+        info.buffer = buffer->vulkan_buffer();
+        info.sType = VK_STRUCTURE_TYPE_BUFFER_DEVICE_ADDRESS_INFO;
+        info.pNext = NULL;
+
+        auto dev_addr = vkGetBufferDeviceAddress(
+            m_kernel->context()->device()->vulkan_device(), &info);
+        dev_addr += buffer->vulkan_buffer_offset();
+
+        vkCmdPushConstants(command_buffer, m_kernel->pipeline_layout(),
+                           VK_SHADER_STAGE_COMPUTE_BIT, pc->offset, pc->size,
+                           &dev_addr);
+    }
+
     uint32_t image_metadata_pc_start = UINT32_MAX;
     uint32_t image_metadata_pc_end = 0;
     if (const auto* md = m_kernel->get_image_metadata()) {
