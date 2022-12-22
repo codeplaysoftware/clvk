@@ -427,6 +427,7 @@ void cvk_device::init_compiler_options() {
 
     if (config.physical_addressing()) {
         m_device_compiler_options += " -physical-storage-buffers ";
+        m_device_compiler_options += " -hack-logical-ptrtoint ";
     }
 
     // Builtin options
